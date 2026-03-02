@@ -2,22 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Social Search</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body data-theme="midnight">
   <div id="app" class="centered">
     <header>
-      <h1>Social Search</h1>
+      <div class="header-row">
+        <h1 id="logo">Social Search</h1>
+        <button id="settings-btn" type="button" title="Settings" aria-label="Settings">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </div>
       <p class="subtitle">Search across 6 platforms at once</p>
-      <button id="settings-btn" title="Settings" aria-label="Settings">&#9881;</button>
     </header>
 
     <form id="search-form">
       <div class="search-bar">
         <input type="text" id="query" placeholder="Search any topic, person, or event..." autocomplete="off" autofocus>
-        <button type="submit">Search</button>
+        <button type="submit" id="search-btn">Search</button>
       </div>
     </form>
 
@@ -29,10 +33,10 @@
     </div>
 
     <div id="filters" class="hidden">
-      <button class="filter active" data-platform="all">All</button>
-      <button class="filter" data-platform="hackernews">Hacker News</button>
-      <button class="filter" data-platform="youtube">YouTube</button>
-      <button class="filter" data-platform="reddit">Reddit</button>
+      <button class="filter active" data-platform="all" type="button">All</button>
+      <button class="filter" data-platform="hackernews" type="button">Hacker News</button>
+      <button class="filter" data-platform="youtube" type="button">YouTube</button>
+      <button class="filter" data-platform="reddit" type="button">Reddit</button>
     </div>
 
     <div id="status" class="hidden"></div>
@@ -42,13 +46,46 @@
   <!-- Settings Modal -->
   <div id="settings-modal" class="modal hidden">
     <div class="modal-content">
-      <h2>Settings</h2>
-      <label for="yt-key">YouTube API Key <span class="optional">(optional)</span></label>
-      <input type="text" id="yt-key" placeholder="Enter your YouTube Data API v3 key">
-      <p class="hint">Get a free key from <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">Google Cloud Console</a>. Enable "YouTube Data API v3" first.</p>
+      <div class="modal-header">
+        <h2>Settings</h2>
+        <button id="close-settings-x" class="close-x" type="button" aria-label="Close">&times;</button>
+      </div>
+
+      <div class="settings-section">
+        <h3>Theme</h3>
+        <div id="theme-picker" class="theme-picker">
+          <button class="theme-swatch" data-theme="midnight" type="button" title="Midnight">
+            <span class="swatch-colors"><span style="background:#0d1117"></span><span style="background:#58a6ff"></span><span style="background:#d2a8ff"></span><span style="background:#238636"></span></span>
+            <span class="swatch-name">Midnight</span>
+          </button>
+          <button class="theme-swatch" data-theme="ember" type="button" title="Ember">
+            <span class="swatch-colors"><span style="background:#1a1210"></span><span style="background:#ff9f43"></span><span style="background:#ee5a24"></span><span style="background:#f8b739"></span></span>
+            <span class="swatch-name">Ember</span>
+          </button>
+          <button class="theme-swatch" data-theme="forest" type="button" title="Forest">
+            <span class="swatch-colors"><span style="background:#0d1512"></span><span style="background:#2ed573"></span><span style="background:#1abc9c"></span><span style="background:#a3cb38"></span></span>
+            <span class="swatch-name">Forest</span>
+          </button>
+          <button class="theme-swatch" data-theme="amethyst" type="button" title="Amethyst">
+            <span class="swatch-colors"><span style="background:#13091e"></span><span style="background:#a29bfe"></span><span style="background:#fd79a8"></span><span style="background:#6c5ce7"></span></span>
+            <span class="swatch-name">Amethyst</span>
+          </button>
+          <button class="theme-swatch" data-theme="slate" type="button" title="Slate">
+            <span class="swatch-colors"><span style="background:#1a1a2e"></span><span style="background:#00d2d3"></span><span style="background:#c8d6e5"></span><span style="background:#576574"></span></span>
+            <span class="swatch-name">Slate</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3>YouTube API Key <span class="optional">(optional)</span></h3>
+        <input type="text" id="yt-key" placeholder="Enter your YouTube Data API v3 key">
+        <p class="hint">Get a free key from <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">Google Cloud Console</a>. Enable "YouTube Data API v3" first.</p>
+      </div>
+
       <div class="modal-actions">
-        <button id="save-settings">Save</button>
-        <button id="close-settings" class="secondary">Cancel</button>
+        <button id="save-settings" type="button">Save</button>
+        <button id="close-settings" type="button" class="secondary">Cancel</button>
       </div>
     </div>
   </div>
