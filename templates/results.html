@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}{{ query }} — Social Search{% endblock %}
+
+{% block content %}
+<header class="results-header">
+    <a href="/" class="logo-small">Social Search</a>
+    <form action="/search" method="get" class="search-form search-form-inline">
+        <input type="text" name="q" value="{{ query }}" autocomplete="off">
+        <button type="submit">Search</button>
+    </form>
+</header>
+
+<div class="filters">
+    {% for p in platforms %}
+    <a href="/search?q={{ query | urlencode }}&platform={{ p }}"
+       class="filter-tab {% if active_platform == p %}active{% endif %}">
+        {{ p | capitalize if p != "hackernews" else "Hacker News" }}
+    </a>
+    {% endfor %}
+</div>
+
+{% if errors %}
+<div class="errors">
+    {% for err in errors %}
+    <p class="error-msg">{{ err }}</p>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="results">
+    {% if results %}
+        {% for r in results %}
+        <div class="result-card {{ r.platform }}">
+            <div class="result-meta">
+                <span class="platform-badge {{ r.platform }}">
+                    {% if r.platform == "reddit" %}Reddit
+                    {% elif r.platform == "youtube" %}YouTube
+                    {% elif r.platform == "hackernews" %}HN
+                    {% endif %}
+                </span>
+                {% if r.extra.get("subreddit") %}
+                    <span class="subreddit">r/{{ r.extra.subreddit }}</span>
+                {% endif %}
+                <span class="author">{{ r.author }}</span>
+                {% if r.timestamp %}
+                    <span class="timestamp">{{ r.timestamp.strftime('%b %d, %Y') }}</span>
+                {% endif %}
+            </div>
+
+            {% if r.platform == "youtube" and r.extra.get("thumbnail") %}
+            <div class="youtube-row">
+                <a href="{{ r.url }}" target="_blank" class="thumbnail">
+                    <img src="{{ r.extra.thumbnail }}" alt="{{ r.title }}">
+                </a>
+                <div>
+                    <a href="{{ r.url }}" target="_blank" class="result-title">{{ r.title }}</a>
+                    {% if r.body %}
+                    <p class="result-body">{{ r.body }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+                <a href="{{ r.url }}" target="_blank" class="result-title">{{ r.title }}</a>
+                {% if r.body %}
+                <p class="result-body">{{ r.body }}</p>
+                {% endif %}
+            {% endif %}
+
+            <div class="result-stats">
+                {% if r.score %}
+                    <span>{{ r.score }} points</span>
+                {% endif %}
+                {% if r.extra.get("comments") %}
+                    <span>{{ r.extra.comments }} comments</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p class="no-results">No results found for "{{ query }}"</p>
+    {% endif %}
+</div>
+{% endblock %}

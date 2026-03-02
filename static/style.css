@@ -1,0 +1,271 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #0f0f0f;
+    color: #e0e0e0;
+    min-height: 100vh;
+}
+
+a {
+    color: #7cb8ff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Home page */
+.home {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+.logo {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.5rem;
+}
+
+.tagline {
+    color: #888;
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+}
+
+/* Search form */
+.search-form {
+    display: flex;
+    gap: 0.5rem;
+    width: 100%;
+    max-width: 600px;
+}
+
+.search-form input {
+    flex: 1;
+    padding: 0.85rem 1.2rem;
+    border: 1px solid #333;
+    border-radius: 8px;
+    background: #1a1a1a;
+    color: #e0e0e0;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.search-form input:focus {
+    border-color: #7cb8ff;
+}
+
+.search-form button {
+    padding: 0.85rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    background: #2563eb;
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.search-form button:hover {
+    background: #1d4ed8;
+}
+
+/* Results header */
+.results-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1rem 2rem;
+    background: #161616;
+    border-bottom: 1px solid #222;
+}
+
+.logo-small {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+}
+
+.search-form-inline {
+    max-width: 500px;
+}
+
+/* Filters */
+.filters {
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.75rem 2rem;
+    background: #161616;
+    border-bottom: 1px solid #222;
+}
+
+.filter-tab {
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    color: #888;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.filter-tab:hover {
+    background: #222;
+    color: #e0e0e0;
+    text-decoration: none;
+}
+
+.filter-tab.active {
+    background: #2563eb;
+    color: #fff;
+}
+
+/* Errors */
+.errors {
+    padding: 0.75rem 2rem;
+}
+
+.error-msg {
+    color: #f87171;
+    font-size: 0.85rem;
+}
+
+/* Results list */
+.results {
+    max-width: 800px;
+    margin: 1.5rem auto;
+    padding: 0 2rem;
+}
+
+.result-card {
+    background: #1a1a1a;
+    border: 1px solid #262626;
+    border-radius: 10px;
+    padding: 1.2rem;
+    margin-bottom: 1rem;
+    transition: border-color 0.2s;
+}
+
+.result-card:hover {
+    border-color: #333;
+}
+
+.result-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.6rem;
+    font-size: 0.85rem;
+    color: #888;
+    flex-wrap: wrap;
+}
+
+.platform-badge {
+    padding: 0.15rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.platform-badge.reddit {
+    background: #ff4500;
+    color: #fff;
+}
+
+.platform-badge.youtube {
+    background: #ff0000;
+    color: #fff;
+}
+
+.platform-badge.hackernews {
+    background: #ff6600;
+    color: #fff;
+}
+
+.subreddit {
+    color: #a78bfa;
+}
+
+.result-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #e0e0e0;
+    display: block;
+    margin-bottom: 0.4rem;
+}
+
+.result-title:hover {
+    color: #7cb8ff;
+}
+
+.result-body {
+    color: #999;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 0.5rem;
+}
+
+.result-stats {
+    display: flex;
+    gap: 1rem;
+    color: #666;
+    font-size: 0.8rem;
+}
+
+/* YouTube thumbnail */
+.youtube-row {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.thumbnail img {
+    width: 200px;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+.no-results {
+    text-align: center;
+    color: #666;
+    padding: 3rem 0;
+    font-size: 1.1rem;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .results-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+
+    .search-form-inline {
+        max-width: 100%;
+    }
+
+    .youtube-row {
+        flex-direction: column;
+    }
+
+    .thumbnail img {
+        width: 100%;
+    }
+
+    .logo {
+        font-size: 2rem;
+    }
+}
