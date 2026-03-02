@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Social Search</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app" class="centered">
+    <header>
+      <h1>Social Search</h1>
+      <p class="subtitle">Search across 6 platforms at once</p>
+      <button id="settings-btn" title="Settings" aria-label="Settings">&#9881;</button>
+    </header>
+
+    <form id="search-form">
+      <div class="search-bar">
+        <input type="text" id="query" placeholder="Search any topic, person, or event..." autocomplete="off" autofocus>
+        <button type="submit">Search</button>
+      </div>
+    </form>
+
+    <div id="quick-links" class="hidden">
+      <span class="quick-label">Also search on:</span>
+      <a id="link-facebook" class="quick-link facebook" target="_blank" rel="noopener">Facebook</a>
+      <a id="link-tiktok" class="quick-link tiktok" target="_blank" rel="noopener">TikTok</a>
+      <a id="link-instagram" class="quick-link instagram" target="_blank" rel="noopener">Instagram</a>
+    </div>
+
+    <div id="filters" class="hidden">
+      <button class="filter active" data-platform="all">All</button>
+      <button class="filter" data-platform="hackernews">Hacker News</button>
+      <button class="filter" data-platform="youtube">YouTube</button>
+      <button class="filter" data-platform="reddit">Reddit</button>
+    </div>
+
+    <div id="status" class="hidden"></div>
+    <div id="results"></div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Settings</h2>
+      <label for="yt-key">YouTube API Key <span class="optional">(optional)</span></label>
+      <input type="text" id="yt-key" placeholder="Enter your YouTube Data API v3 key">
+      <p class="hint">Get a free key from <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">Google Cloud Console</a>. Enable "YouTube Data API v3" first.</p>
+      <div class="modal-actions">
+        <button id="save-settings">Save</button>
+        <button id="close-settings" class="secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
