@@ -32,11 +32,18 @@
       <a id="link-instagram" class="quick-link instagram" target="_blank" rel="noopener">Instagram</a>
     </div>
 
-    <div id="filters" class="hidden">
-      <button class="filter active" data-platform="all" type="button">All</button>
-      <button class="filter active" data-platform="hackernews" type="button">Hacker News</button>
-      <button class="filter active" data-platform="youtube" type="button">YouTube</button>
-      <button class="filter active" data-platform="reddit" type="button">Reddit</button>
+    <div id="controls-row" class="hidden">
+      <div id="filters">
+        <button class="filter active" data-platform="all" type="button">All</button>
+        <button class="filter active" data-platform="hackernews" type="button">Hacker News</button>
+        <button class="filter active" data-platform="youtube" type="button">YouTube</button>
+        <button class="filter active" data-platform="reddit" type="button">Reddit</button>
+      </div>
+      <div id="count-control">
+        <button id="count-minus" type="button" aria-label="Fewer results">&minus;</button>
+        <span id="count-display">10</span>
+        <button id="count-plus" type="button" aria-label="More results">&plus;</button>
+      </div>
     </div>
 
     <div id="status" class="hidden"></div>

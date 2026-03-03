@@ -285,14 +285,74 @@ h1 {
 .quick-link.tiktok { background: #222; border: 1px solid #555; }
 .quick-link.instagram { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
 
+/* ── Controls Row ── */
+
+#controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
 /* ── Filters ── */
 
 #filters {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin-bottom: 20px;
-  width: 100%;
+}
+
+/* ── Article Count ── */
+
+#count-control {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+#count-control button {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#count-minus { border-radius: 8px 0 0 8px; }
+#count-plus { border-radius: 0 8px 8px 0; }
+
+#count-control button:hover,
+#count-control button:active {
+  background: var(--bg-hover);
+  border-color: var(--accent-1);
+  color: var(--accent-1);
+}
+
+#count-display {
+  min-width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-input);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 .filter {

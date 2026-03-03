@@ -11,6 +11,7 @@
   var form = document.getElementById("search-form");
   var queryInput = document.getElementById("query");
   var quickLinks = document.getElementById("quick-links");
+  var controlsRow = document.getElementById("controls-row");
   var filtersEl = document.getElementById("filters");
   var statusEl = document.getElementById("status");
   var resultsEl = document.getElementById("results");
@@ -142,13 +143,16 @@
     }
   }
 
-  filtersEl.addEventListener("click", function (e) {
+  function handleFilterTap(e) {
     var btn = e.target.closest(".filter");
     if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+
     var platform = btn.getAttribute("data-platform");
 
     if (platform === "all") {
-      // Check if all are currently on — if so, do nothing; otherwise turn all on
+      // If any are off, turn all on
       var allOn = true;
       for (var i = 0; i < ALL_PLATFORMS.length; i++) {
         if (!enabledPlatforms[ALL_PLATFORMS[i]]) { allOn = false; break; }
@@ -159,7 +163,7 @@
     } else {
       // Toggle this platform
       enabledPlatforms[platform] = !enabledPlatforms[platform];
-      // If nothing is enabled, re-enable this one (at least one must be on)
+      // At least one must stay on
       var anyOn = false;
       for (var k = 0; k < ALL_PLATFORMS.length; k++) {
         if (enabledPlatforms[ALL_PLATFORMS[k]]) { anyOn = true; break; }
@@ -169,7 +173,42 @@
 
     syncFilterUI();
     renderResults();
-  });
+  }
+
+  // touchend fires first on iPad — preventDefault suppresses the ghost click
+  filtersEl.addEventListener("touchend", handleFilterTap);
+  filtersEl.addEventListener("click", handleFilterTap);
+
+  // ── Article Count ──
+
+  var countDisplay = document.getElementById("count-display");
+  var countMinus = document.getElementById("count-minus");
+  var countPlus = document.getElementById("count-plus");
+
+  function getArticleCount() {
+    return parseInt(localStorage.getItem("article_count") || "10", 10);
+  }
+
+  function setArticleCount(n) {
+    localStorage.setItem("article_count", String(n));
+    if (countDisplay) countDisplay.textContent = n;
+  }
+
+  // Initialize count display
+  setArticleCount(getArticleCount());
+
+  if (countMinus) {
+    countMinus.addEventListener("click", function () {
+      var c = getArticleCount();
+      if (c > 5) { setArticleCount(c - 5); renderResults(); }
+    });
+  }
+  if (countPlus) {
+    countPlus.addEventListener("click", function () {
+      var c = getArticleCount();
+      if (c < 50) { setArticleCount(c + 5); renderResults(); }
+    });
+  }
 
   // ── Search ──
 
@@ -185,7 +224,7 @@
     app.classList.remove("centered");
     app.classList.add("has-results");
     quickLinks.classList.remove("hidden");
-    filtersEl.classList.remove("hidden");
+    controlsRow.classList.remove("hidden");
 
     // Update quick links
     var enc = encodeURIComponent(query);
@@ -262,7 +301,7 @@
   // ── Searchers ──
 
   function searchHackerNews(query) {
-    var url = "https://hn.algolia.com/api/v1/search?query=" + encodeURIComponent(query) + "&hitsPerPage=15";
+    var url = "https://hn.algolia.com/api/v1/search?query=" + encodeURIComponent(query) + "&hitsPerPage=25";
     return fetchWithTimeout(url, 10000).then(function (resp) {
       if (!resp.ok) throw new Error("HN API returned " + resp.status);
       return resp.json();
@@ -290,7 +329,7 @@
 
   function searchYouTube(query, apiKey) {
     var params = "part=snippet&q=" + encodeURIComponent(query) +
-      "&type=video&maxResults=15&order=relevance&key=" + encodeURIComponent(apiKey);
+      "&type=video&maxResults=25&order=relevance&key=" + encodeURIComponent(apiKey);
     var url = "https://www.googleapis.com/youtube/v3/search?" + params;
     return fetchWithTimeout(url, 10000).then(function (resp) {
       if (!resp.ok) {
@@ -328,7 +367,7 @@
   ];
 
   function searchReddit(query) {
-    var redditUrl = "https://www.reddit.com/search.json?q=" + encodeURIComponent(query) + "&limit=15&sort=relevance";
+    var redditUrl = "https://www.reddit.com/search.json?q=" + encodeURIComponent(query) + "&limit=25&sort=relevance";
 
     function tryProxy(index) {
       if (index >= CORS_PROXIES.length) {
@@ -375,9 +414,18 @@
 
   function renderResults() {
     resultsEl.innerHTML = "";
+    var maxPer = getArticleCount();
+
+    // Count how many of each platform we've included
+    var platformCounts = {};
     var filtered = [];
     for (var i = 0; i < allResults.length; i++) {
-      if (enabledPlatforms[allResults[i].platform]) filtered.push(allResults[i]);
+      var plat = allResults[i].platform;
+      if (!enabledPlatforms[plat]) continue;
+      if (!platformCounts[plat]) platformCounts[plat] = 0;
+      if (platformCounts[plat] >= maxPer) continue;
+      platformCounts[plat]++;
+      filtered.push(allResults[i]);
     }
 
     if (filtered.length === 0 && allResults.length > 0) {
