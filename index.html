@@ -7,6 +7,12 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body data-theme="midnight">
+  <div id="splash-bg">
+    <div class="wave wave-1"></div>
+    <div class="wave wave-2"></div>
+    <div class="wave wave-3"></div>
+  </div>
+
   <div id="app" class="centered">
     <header>
       <div class="header-row">
@@ -15,7 +21,7 @@
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </button>
       </div>
-      <p class="subtitle">Search across 6 platforms at once</p>
+      <p class="subtitle">Search across 12 platforms at once</p>
     </header>
 
     <form id="search-form">
@@ -27,13 +33,18 @@
 
     <div id="toolbar" class="hidden">
       <div id="filters">
-        <button class="filter active" data-platform="all" type="button">All</button>
         <button class="filter active" data-platform="hackernews" type="button">Hacker News</button>
-        <button class="filter active" data-platform="youtube" type="button">YouTube</button>
         <button class="filter active" data-platform="reddit" type="button">Reddit</button>
-        <a id="link-facebook" class="filter filter-link facebook" target="_blank" rel="noopener">Facebook &#8599;</a>
-        <a id="link-tiktok" class="filter filter-link tiktok" target="_blank" rel="noopener">TikTok &#8599;</a>
-        <a id="link-instagram" class="filter filter-link instagram" target="_blank" rel="noopener">Instagram &#8599;</a>
+        <button class="filter active" data-platform="youtube" type="button">YouTube</button>
+        <button class="filter active" data-platform="devto" type="button">Dev.to</button>
+        <button class="filter active" data-platform="github" type="button">GitHub</button>
+        <button class="filter active" data-platform="stackoverflow" type="button">Stack&shy;Overflow</button>
+        <button class="filter active" data-platform="wikipedia" type="button">Wikipedia</button>
+        <button class="filter active" data-platform="lemmy" type="button">Lemmy</button>
+        <button class="filter active" data-platform="googlenews" type="button">Google News</button>
+        <button class="filter active" data-platform="archiveorg" type="button">Archive.org</button>
+        <button class="filter active" data-platform="arxiv" type="button">ArXiv</button>
+        <button class="filter active" data-platform="mastodon" type="button">Mastodon</button>
       </div>
       <div id="count-control">
         <button id="count-minus" type="button" aria-label="Fewer results">&minus;</button>
@@ -58,23 +69,23 @@
         <h3>Theme</h3>
         <div id="theme-picker" class="theme-picker">
           <button class="theme-swatch" data-theme="midnight" type="button" title="Midnight">
-            <span class="swatch-colors"><span style="background:#0d1117"></span><span style="background:#58a6ff"></span><span style="background:#d2a8ff"></span><span style="background:#238636"></span></span>
+            <span class="swatch-colors"><span style="background:#101820"></span><span style="background:#7aaddb"></span><span style="background:#b8a0d4"></span><span style="background:#3a7a5c"></span></span>
             <span class="swatch-name">Midnight</span>
           </button>
           <button class="theme-swatch" data-theme="ember" type="button" title="Ember">
-            <span class="swatch-colors"><span style="background:#1a1210"></span><span style="background:#ff9f43"></span><span style="background:#ee5a24"></span><span style="background:#f8b739"></span></span>
+            <span class="swatch-colors"><span style="background:#1a1614"></span><span style="background:#d4945e"></span><span style="background:#c46a42"></span><span style="background:#b05a30"></span></span>
             <span class="swatch-name">Ember</span>
           </button>
           <button class="theme-swatch" data-theme="forest" type="button" title="Forest">
-            <span class="swatch-colors"><span style="background:#0d1512"></span><span style="background:#2ed573"></span><span style="background:#1abc9c"></span><span style="background:#a3cb38"></span></span>
+            <span class="swatch-colors"><span style="background:#101a16"></span><span style="background:#5cb88a"></span><span style="background:#4aa888"></span><span style="background:#8ab060"></span></span>
             <span class="swatch-name">Forest</span>
           </button>
           <button class="theme-swatch" data-theme="amethyst" type="button" title="Amethyst">
-            <span class="swatch-colors"><span style="background:#13091e"></span><span style="background:#a29bfe"></span><span style="background:#fd79a8"></span><span style="background:#6c5ce7"></span></span>
+            <span class="swatch-colors"><span style="background:#15101e"></span><span style="background:#9590d0"></span><span style="background:#d08a9e"></span><span style="background:#6858b0"></span></span>
             <span class="swatch-name">Amethyst</span>
           </button>
           <button class="theme-swatch" data-theme="slate" type="button" title="Slate">
-            <span class="swatch-colors"><span style="background:#1a1a2e"></span><span style="background:#00d2d3"></span><span style="background:#c8d6e5"></span><span style="background:#576574"></span></span>
+            <span class="swatch-colors"><span style="background:#181a28"></span><span style="background:#50b8ba"></span><span style="background:#c0cad6"></span><span style="background:#4e5a6a"></span></span>
             <span class="swatch-name">Slate</span>
           </button>
         </div>

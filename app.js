@@ -3,11 +3,16 @@
 
   // ── State ──
   var allResults = [];
-  var ALL_PLATFORMS = ["hackernews", "youtube", "reddit"];
-  var enabledPlatforms = { hackernews: true, youtube: true, reddit: true };
+  var ALL_PLATFORMS = [
+    "hackernews", "reddit", "youtube", "devto", "github", "stackoverflow",
+    "wikipedia", "lemmy", "googlenews", "archiveorg", "arxiv", "mastodon"
+  ];
+  var enabledPlatforms = {};
+  for (var i = 0; i < ALL_PLATFORMS.length; i++) enabledPlatforms[ALL_PLATFORMS[i]] = true;
 
   // ── DOM refs ──
   var app = document.getElementById("app");
+  var splashBg = document.getElementById("splash-bg");
   var form = document.getElementById("search-form");
   var queryInput = document.getElementById("query");
   var toolbar = document.getElementById("toolbar");
@@ -31,11 +36,18 @@
     return div.innerHTML;
   }
 
+  function stripHtml(html) {
+    if (!html) return "";
+    var tmp = document.createElement("div");
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || "";
+  }
+
   function fetchWithTimeout(url, timeoutMs) {
     var ms = timeoutMs || 10000;
     return new Promise(function (resolve, reject) {
       var timer = setTimeout(function () {
-        reject(new Error("Request timed out after " + ms + "ms"));
+        reject(new Error("Timed out"));
       }, ms);
       fetch(url).then(function (resp) {
         clearTimeout(timer);
@@ -56,7 +68,6 @@
   function setTheme(name) {
     document.body.setAttribute("data-theme", name);
     localStorage.setItem("theme", name);
-    // Update swatch active states
     var swatches = themePicker.querySelectorAll(".theme-swatch");
     for (var i = 0; i < swatches.length; i++) {
       if (swatches[i].getAttribute("data-theme") === name) {
@@ -67,7 +78,6 @@
     }
   }
 
-  // Initialize theme
   setTheme(getTheme());
 
   themePicker.addEventListener("click", function (e) {
@@ -84,7 +94,7 @@
 
   function openSettings() {
     ytKeyInput.value = getYouTubeKey();
-    setTheme(getTheme()); // refresh active swatch
+    setTheme(getTheme());
     settingsModal.classList.remove("hidden");
   }
 
@@ -98,7 +108,6 @@
     openSettings();
   });
 
-  // Also handle touch explicitly for iPad
   settingsBtn.addEventListener("touchend", function (e) {
     e.preventDefault();
     e.stopPropagation();
@@ -126,16 +135,9 @@
 
   function syncFilterUI() {
     var btns = filtersEl.querySelectorAll(".filter");
-    var allOn = true;
-    for (var i = 0; i < ALL_PLATFORMS.length; i++) {
-      if (!enabledPlatforms[ALL_PLATFORMS[i]]) { allOn = false; break; }
-    }
     for (var j = 0; j < btns.length; j++) {
       var p = btns[j].getAttribute("data-platform");
-      if (p === "all") {
-        if (allOn) btns[j].classList.add("active");
-        else btns[j].classList.remove("active");
-      } else {
+      if (p) {
         if (enabledPlatforms[p]) btns[j].classList.add("active");
         else btns[j].classList.remove("active");
       }
@@ -149,26 +151,13 @@
     e.stopPropagation();
 
     var platform = btn.getAttribute("data-platform");
+    if (!platform) return;
 
-    if (platform === "all") {
-      // If any are off, turn all on
-      var allOn = true;
-      for (var i = 0; i < ALL_PLATFORMS.length; i++) {
-        if (!enabledPlatforms[ALL_PLATFORMS[i]]) { allOn = false; break; }
-      }
-      if (!allOn) {
-        for (var j = 0; j < ALL_PLATFORMS.length; j++) enabledPlatforms[ALL_PLATFORMS[j]] = true;
-      }
-    } else {
-      // Toggle this platform
-      enabledPlatforms[platform] = !enabledPlatforms[platform];
-    }
-
+    enabledPlatforms[platform] = !enabledPlatforms[platform];
     syncFilterUI();
     renderResults();
   }
 
-  // touchend fires first on iPad — preventDefault suppresses the ghost click
   filtersEl.addEventListener("touchend", handleFilterTap);
   filtersEl.addEventListener("click", handleFilterTap);
 
@@ -187,7 +176,6 @@
     if (countDisplay) countDisplay.textContent = n;
   }
 
-  // Initialize count display
   setArticleCount(getArticleCount());
 
   if (countMinus) {
@@ -213,29 +201,27 @@
   });
 
   function doSearch(query) {
-    // Switch to results layout
     app.classList.remove("centered");
     app.classList.add("has-results");
     toolbar.classList.remove("hidden");
+    if (splashBg) splashBg.classList.add("faded");
 
-    // Update external platform links
-    var enc = encodeURIComponent(query);
-    document.getElementById("link-facebook").href =
-      "https://www.facebook.com/search/posts/?q=" + enc;
-    document.getElementById("link-tiktok").href =
-      "https://www.tiktok.com/search?q=" + enc;
-    document.getElementById("link-instagram").href =
-      "https://www.instagram.com/explore/tags/" + encodeURIComponent(query.replace(/\s+/g, "")) + "/";
-
-    // Show loading
     allResults = [];
     resultsEl.innerHTML = "";
-    showStatus('<span class="spinner"></span> Searching across platforms...');
+    showStatus('<span class="spinner"></span> Searching 12 platforms...');
 
-    // Fire all API searches in parallel
     var searches = [
       searchHackerNews(query),
       searchReddit(query),
+      searchDevTo(query),
+      searchGitHub(query),
+      searchStackOverflow(query),
+      searchWikipedia(query),
+      searchLemmy(query),
+      searchGoogleNews(query),
+      searchArchiveOrg(query),
+      searchArxiv(query),
+      searchMastodon(query),
     ];
 
     var ytKey = getYouTubeKey();
@@ -246,11 +232,16 @@
     Promise.allSettled(searches).then(function (settled) {
       allResults = [];
       var errors = [];
+      var platformCounts = {};
 
       for (var i = 0; i < settled.length; i++) {
         var r = settled[i];
-        if (r.status === "fulfilled" && r.value && r.value.results && r.value.results.length > 0) {
-          allResults = allResults.concat(r.value.results);
+        if (r.status === "fulfilled" && r.value && r.value.results) {
+          for (var j = 0; j < r.value.results.length; j++) {
+            allResults.push(r.value.results[j]);
+            var pl = r.value.results[j].platform;
+            platformCounts[pl] = (platformCounts[pl] || 0) + 1;
+          }
         }
         if (r.status === "fulfilled" && r.value && r.value.error) {
           errors.push(r.value.error);
@@ -260,24 +251,23 @@
         }
       }
 
-      // Sort by date (newest first)
       allResults.sort(function (a, b) { return (b.timestamp || 0) - (a.timestamp || 0); });
 
       var msg;
       if (allResults.length === 0 && errors.length > 0) {
-        showStatus("No results found. Errors: " + escapeHtml(errors.join("; ")), true);
+        showStatus("No results. Errors: " + escapeHtml(errors.join("; ")), true);
       } else if (allResults.length === 0) {
-        msg = 'No results found for "' + escapeHtml(query) + '"';
-        if (!ytKey) msg += '. <a href="#" id="add-yt-hint">Add YouTube API key</a> for more results';
+        msg = 'No results for "' + escapeHtml(query) + '"';
+        if (!ytKey) msg += ' · <a href="#" id="add-yt-hint">Add YouTube key</a> for more';
         showStatus(msg);
       } else {
-        msg = allResults.length + " result" + (allResults.length !== 1 ? "s" : "") + " found";
-        if (!ytKey) msg += ' &middot; <a href="#" id="add-yt-hint">Add YouTube API key</a> for more';
-        if (errors.length > 0) msg += " &middot; Some platforms had errors";
+        var sources = Object.keys(platformCounts).length;
+        msg = allResults.length + " results from " + sources + " source" + (sources !== 1 ? "s" : "");
+        if (!ytKey) msg += ' · <a href="#" id="add-yt-hint">Add YouTube key</a>';
+        if (errors.length > 0) msg += " · " + errors.length + " source" + (errors.length !== 1 ? "s" : "") + " had errors";
         showStatus(msg);
       }
 
-      // Bind the hint link if present
       var hint = document.getElementById("add-yt-hint");
       if (hint) {
         hint.addEventListener("click", function (ev) {
@@ -290,27 +280,50 @@
     });
   }
 
+  // ── CORS Proxies ──
+
+  var CORS_PROXIES = [
+    function (u) { return "https://api.allorigins.win/raw?url=" + encodeURIComponent(u); },
+    function (u) { return "https://corsproxy.io/?" + encodeURIComponent(u); },
+  ];
+
+  function fetchViaProxy(url, timeout) {
+    function tryProxy(index) {
+      if (index >= CORS_PROXIES.length) {
+        return Promise.reject(new Error("All proxies failed"));
+      }
+      return fetchWithTimeout(CORS_PROXIES[index](url), timeout || 8000).then(function (resp) {
+        if (!resp.ok) throw new Error("Proxy " + (index + 1) + " returned " + resp.status);
+        return resp;
+      }).catch(function () {
+        return tryProxy(index + 1);
+      });
+    }
+    return tryProxy(0);
+  }
+
   // ── Searchers ──
 
+  // 1. Hacker News (Algolia)
   function searchHackerNews(query) {
     var url = "https://hn.algolia.com/api/v1/search?query=" + encodeURIComponent(query) + "&hitsPerPage=25";
     return fetchWithTimeout(url, 10000).then(function (resp) {
-      if (!resp.ok) throw new Error("HN API returned " + resp.status);
+      if (!resp.ok) throw new Error("HN " + resp.status);
       return resp.json();
     }).then(function (data) {
       var hits = data.hits || [];
       var results = [];
       for (var i = 0; i < hits.length; i++) {
-        var hit = hits[i];
+        var h = hits[i];
         results.push({
           platform: "hackernews",
-          title: hit.title || hit.story_title || "Untitled",
-          url: hit.url || ("https://news.ycombinator.com/item?id=" + hit.objectID),
-          author: hit.author,
-          timestamp: hit.created_at_i ? hit.created_at_i * 1000 : null,
-          points: hit.points,
-          comments: hit.num_comments,
-          body: hit.story_text || hit.comment_text || "",
+          title: h.title || h.story_title || "Untitled",
+          url: h.url || ("https://news.ycombinator.com/item?id=" + h.objectID),
+          author: h.author,
+          timestamp: h.created_at_i ? h.created_at_i * 1000 : null,
+          points: h.points,
+          comments: h.num_comments,
+          body: h.story_text || h.comment_text || "",
         });
       }
       return { results: results };
@@ -319,14 +332,44 @@
     });
   }
 
+  // 2. Reddit (via CORS proxy)
+  function searchReddit(query) {
+    var redditUrl = "https://www.reddit.com/search.json?q=" + encodeURIComponent(query) + "&limit=25&sort=relevance";
+    return fetchViaProxy(redditUrl, 8000).then(function (resp) {
+      return resp.json();
+    }).then(function (data) {
+      var children = (data && data.data && data.data.children) || [];
+      var results = [];
+      for (var i = 0; i < children.length; i++) {
+        var p = children[i].data;
+        if (!p) continue;
+        results.push({
+          platform: "reddit",
+          title: p.title || "Untitled",
+          url: "https://www.reddit.com" + (p.permalink || ""),
+          author: p.author,
+          timestamp: p.created_utc ? p.created_utc * 1000 : null,
+          score: p.score,
+          comments: p.num_comments,
+          subreddit: p.subreddit_name_prefixed,
+          body: p.selftext || "",
+        });
+      }
+      return { results: results };
+    }).catch(function (err) {
+      return { results: [], error: "Reddit: " + err.message };
+    });
+  }
+
+  // 3. YouTube (API key required)
   function searchYouTube(query, apiKey) {
     var params = "part=snippet&q=" + encodeURIComponent(query) +
-      "&type=video&maxResults=25&order=relevance&key=" + encodeURIComponent(apiKey);
+      "&type=video&maxResults=15&order=relevance&key=" + encodeURIComponent(apiKey);
     var url = "https://www.googleapis.com/youtube/v3/search?" + params;
     return fetchWithTimeout(url, 10000).then(function (resp) {
       if (!resp.ok) {
         return resp.json().catch(function () { return {}; }).then(function (body) {
-          throw new Error((body.error && body.error.message) || ("API returned " + resp.status));
+          throw new Error((body.error && body.error.message) || ("API " + resp.status));
         });
       }
       return resp.json();
@@ -352,48 +395,274 @@
     });
   }
 
-  // Reddit: try multiple CORS proxies as fallbacks
-  var CORS_PROXIES = [
-    function (u) { return "https://api.allorigins.win/raw?url=" + encodeURIComponent(u); },
-    function (u) { return "https://corsproxy.io/?" + encodeURIComponent(u); },
-  ];
-
-  function searchReddit(query) {
-    var redditUrl = "https://www.reddit.com/search.json?q=" + encodeURIComponent(query) + "&limit=25&sort=relevance";
-
-    function tryProxy(index) {
-      if (index >= CORS_PROXIES.length) {
-        return Promise.resolve({ results: [], error: "Reddit: all proxies failed" });
+  // 4. Dev.to (Forem API)
+  function searchDevTo(query) {
+    var url = "https://dev.to/api/articles?per_page=20&tag=" + encodeURIComponent(query.toLowerCase().replace(/\s+/g, ""));
+    return fetchWithTimeout(url, 10000).then(function (resp) {
+      if (!resp.ok) throw new Error("Dev.to " + resp.status);
+      return resp.json();
+    }).then(function (articles) {
+      if (!Array.isArray(articles)) articles = [];
+      var results = [];
+      for (var i = 0; i < articles.length; i++) {
+        var a = articles[i];
+        results.push({
+          platform: "devto",
+          title: a.title || "Untitled",
+          url: a.url || ("https://dev.to" + (a.path || "")),
+          author: a.user ? a.user.name : "",
+          timestamp: a.published_at ? new Date(a.published_at).getTime() : null,
+          body: a.description || "",
+          comments: a.comments_count,
+          score: a.positive_reactions_count,
+          thumbnail: a.cover_image || null,
+        });
       }
-      var proxyUrl = CORS_PROXIES[index](redditUrl);
-      return fetchWithTimeout(proxyUrl, 8000).then(function (resp) {
-        if (!resp.ok) throw new Error("Proxy " + (index + 1) + " returned " + resp.status);
-        return resp.json();
-      }).then(function (data) {
-        var children = (data && data.data && data.data.children) || [];
-        var results = [];
-        for (var i = 0; i < children.length; i++) {
-          var p = children[i].data;
-          if (!p) continue;
-          results.push({
-            platform: "reddit",
-            title: p.title || "Untitled",
-            url: "https://www.reddit.com" + (p.permalink || ""),
-            author: p.author,
-            timestamp: p.created_utc ? p.created_utc * 1000 : null,
-            score: p.score,
-            comments: p.num_comments,
-            subreddit: p.subreddit_name_prefixed,
-            body: p.selftext || "",
-          });
-        }
-        return { results: results };
-      }).catch(function () {
-        return tryProxy(index + 1);
-      });
-    }
+      return { results: results };
+    }).catch(function (err) {
+      return { results: [], error: "Dev.to: " + err.message };
+    });
+  }
 
-    return tryProxy(0);
+  // 5. GitHub (Search API)
+  function searchGitHub(query) {
+    var url = "https://api.github.com/search/repositories?q=" + encodeURIComponent(query) + "&sort=updated&per_page=15";
+    return fetchWithTimeout(url, 10000).then(function (resp) {
+      if (!resp.ok) throw new Error("GitHub " + resp.status);
+      return resp.json();
+    }).then(function (data) {
+      var items = data.items || [];
+      var results = [];
+      for (var i = 0; i < items.length; i++) {
+        var r = items[i];
+        results.push({
+          platform: "github",
+          title: r.full_name || r.name || "Untitled",
+          url: r.html_url || "",
+          author: r.owner ? r.owner.login : "",
+          timestamp: r.updated_at ? new Date(r.updated_at).getTime() : null,
+          body: r.description || "",
+          score: r.stargazers_count,
+          language: r.language,
+        });
+      }
+      return { results: results };
+    }).catch(function (err) {
+      return { results: [], error: "GitHub: " + err.message };
+    });
+  }
+
+  // 6. StackOverflow (StackExchange API)
+  function searchStackOverflow(query) {
+    var url = "https://api.stackexchange.com/2.3/search/excerpts?order=desc&sort=relevance&q=" +
+      encodeURIComponent(query) + "&site=stackoverflow&pagesize=15";
+    return fetchWithTimeout(url, 10000).then(function (resp) {
+      if (!resp.ok) throw new Error("SO " + resp.status);
+      return resp.json();
+    }).then(function (data) {
+      var items = data.items || [];
+      var results = [];
+      for (var i = 0; i < items.length; i++) {
+        var it = items[i];
+        if (it.item_type !== "question") continue;
+        results.push({
+          platform: "stackoverflow",
+          title: stripHtml(it.title) || "Untitled",
+          url: "https://stackoverflow.com/q/" + it.question_id,
+          author: "",
+          timestamp: it.creation_date ? it.creation_date * 1000 : null,
+          body: stripHtml(it.excerpt) || "",
+          score: it.score,
+          tags: it.tags,
+        });
+      }
+      return { results: results };
+    }).catch(function (err) {
+      return { results: [], error: "StackOverflow: " + err.message };
+    });
+  }
+
+  // 7. Wikipedia (REST API search)
+  function searchWikipedia(query) {
+    var url = "https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=" +
+      encodeURIComponent(query) + "&srlimit=15&format=json&origin=*";
+    return fetchWithTimeout(url, 10000).then(function (resp) {
+      if (!resp.ok) throw new Error("Wikipedia " + resp.status);
+      return resp.json();
+    }).then(function (data) {
+      var items = (data.query && data.query.search) || [];
+      var results = [];
+      for (var i = 0; i < items.length; i++) {
+        var w = items[i];
+        results.push({
+          platform: "wikipedia",
+          title: w.title || "Untitled",
+          url: "https://en.wikipedia.org/wiki/" + encodeURIComponent(w.title.replace(/ /g, "_")),
+          author: "",
+          timestamp: w.timestamp ? new Date(w.timestamp).getTime() : null,
+          body: stripHtml(w.snippet) || "",
+          wordcount: w.wordcount,
+        });
+      }
+      return { results: results };
+    }).catch(function (err) {
+      return { results: [], error: "Wikipedia: " + err.message };
+    });
+  }
+
+  // 8. Lemmy (lemmy.world API)
+  function searchLemmy(query) {
+    var url = "https://lemmy.world/api/v3/search?q=" + encodeURIComponent(query) + "&type_=Posts&sort=TopAll&limit=15";
+    return fetchViaProxy(url, 10000).then(function (resp) {
+      return resp.json();
+    }).then(function (data) {
+      var posts = data.posts || [];
+      var results = [];
+      for (var i = 0; i < posts.length; i++) {
+        var p = posts[i].post;
+        var c = posts[i].counts;
+        if (!p) continue;
+        results.push({
+          platform: "lemmy",
+          title: p.name || "Untitled",
+          url: p.ap_id || ("https://lemmy.world/post/" + p.id),
+          author: posts[i].creator ? posts[i].creator.name : "",
+          timestamp: p.published ? new Date(p.published).getTime() : null,
+          body: p.body || "",
+          score: c ? c.score : null,
+          comments: c ? c.comments : null,
+        });
+      }
+      return { results: results };
+    }).catch(function (err) {
+      return { results: [], error: "Lemmy: " + err.message };
+    });
+  }
+
+  // 9. Google News (RSS via CORS proxy)
+  function searchGoogleNews(query) {
+    var rssUrl = "https://news.google.com/rss/search?q=" + encodeURIComponent(query) + "&hl=en-US&gl=US&ceid=US:en";
+    return fetchViaProxy(rssUrl, 10000).then(function (resp) {
+      return resp.text();
+    }).then(function (xml) {
+      var parser = new DOMParser();
+      var doc = parser.parseFromString(xml, "text/xml");
+      var items = doc.querySelectorAll("item");
+      var results = [];
+      for (var i = 0; i < items.length && i < 20; i++) {
+        var item = items[i];
+        var title = item.querySelector("title");
+        var link = item.querySelector("link");
+        var pubDate = item.querySelector("pubDate");
+        var source = item.querySelector("source");
+        results.push({
+          platform: "googlenews",
+          title: title ? title.textContent : "Untitled",
+          url: link ? link.textContent : "",
+          author: source ? source.textContent : "",
+          timestamp: pubDate ? new Date(pubDate.textContent).getTime() : null,
+          body: "",
+        });
+      }
+      return { results: results };
+    }).catch(function (err) {
+      return { results: [], error: "Google News: " + err.message };
+    });
+  }
+
+  // 10. Archive.org
+  function searchArchiveOrg(query) {
+    var url = "https://archive.org/advancedsearch.php?q=" + encodeURIComponent(query) +
+      "&fl[]=identifier&fl[]=title&fl[]=creator&fl[]=description&fl[]=date&fl[]=downloads&output=json&rows=15&sort[]=downloads+desc";
+    return fetchWithTimeout(url, 10000).then(function (resp) {
+      if (!resp.ok) throw new Error("Archive.org " + resp.status);
+      return resp.json();
+    }).then(function (data) {
+      var docs = (data.response && data.response.docs) || [];
+      var results = [];
+      for (var i = 0; i < docs.length; i++) {
+        var d = docs[i];
+        results.push({
+          platform: "archiveorg",
+          title: d.title || "Untitled",
+          url: "https://archive.org/details/" + encodeURIComponent(d.identifier || ""),
+          author: d.creator || "",
+          timestamp: d.date ? new Date(d.date).getTime() : null,
+          body: d.description ? (typeof d.description === "string" ? d.description : d.description[0] || "") : "",
+          score: d.downloads,
+        });
+      }
+      return { results: results };
+    }).catch(function (err) {
+      return { results: [], error: "Archive.org: " + err.message };
+    });
+  }
+
+  // 11. ArXiv (Atom API via CORS proxy)
+  function searchArxiv(query) {
+    var url = "https://export.arxiv.org/api/query?search_query=all:" + encodeURIComponent(query) +
+      "&start=0&max_results=15&sortBy=relevance&sortOrder=descending";
+    return fetchViaProxy(url, 10000).then(function (resp) {
+      return resp.text();
+    }).then(function (xml) {
+      var parser = new DOMParser();
+      var doc = parser.parseFromString(xml, "text/xml");
+      var entries = doc.querySelectorAll("entry");
+      var results = [];
+      for (var i = 0; i < entries.length; i++) {
+        var entry = entries[i];
+        var title = entry.querySelector("title");
+        var summary = entry.querySelector("summary");
+        var published = entry.querySelector("published");
+        var link = entry.querySelector('link[title="pdf"]') || entry.querySelector("link");
+        var authors = entry.querySelectorAll("author name");
+        var authorNames = [];
+        for (var j = 0; j < authors.length && j < 3; j++) {
+          authorNames.push(authors[j].textContent);
+        }
+        if (authors.length > 3) authorNames.push("et al.");
+        results.push({
+          platform: "arxiv",
+          title: title ? title.textContent.trim().replace(/\s+/g, " ") : "Untitled",
+          url: link ? link.getAttribute("href") : "",
+          author: authorNames.join(", "),
+          timestamp: published ? new Date(published.textContent).getTime() : null,
+          body: summary ? summary.textContent.trim().replace(/\s+/g, " ").slice(0, 300) : "",
+        });
+      }
+      return { results: results };
+    }).catch(function (err) {
+      return { results: [], error: "ArXiv: " + err.message };
+    });
+  }
+
+  // 12. Mastodon (trending + hashtag timeline)
+  function searchMastodon(query) {
+    var tag = query.toLowerCase().replace(/[^a-z0-9]/g, "");
+    var url = "https://mastodon.social/api/v1/timelines/tag/" + encodeURIComponent(tag) + "?limit=15";
+    return fetchWithTimeout(url, 10000).then(function (resp) {
+      if (!resp.ok) throw new Error("Mastodon " + resp.status);
+      return resp.json();
+    }).then(function (statuses) {
+      if (!Array.isArray(statuses)) statuses = [];
+      var results = [];
+      for (var i = 0; i < statuses.length; i++) {
+        var s = statuses[i];
+        var text = stripHtml(s.content || "");
+        results.push({
+          platform: "mastodon",
+          title: text.slice(0, 120) || "Post",
+          url: s.url || s.uri || "",
+          author: s.account ? (s.account.display_name || s.account.username) : "",
+          timestamp: s.created_at ? new Date(s.created_at).getTime() : null,
+          body: text,
+          score: (s.favourites_count || 0) + (s.reblogs_count || 0),
+        });
+      }
+      return { results: results };
+    }).catch(function (err) {
+      return { results: [], error: "Mastodon: " + err.message };
+    });
   }
 
   // ── Rendering ──
@@ -407,10 +676,9 @@
   function renderResults() {
     resultsEl.innerHTML = "";
     var maxPer = getArticleCount();
-
-    // Count how many of each platform we've included
     var platformCounts = {};
     var filtered = [];
+
     for (var i = 0; i < allResults.length; i++) {
       var plat = allResults[i].platform;
       if (!enabledPlatforms[plat]) continue;
@@ -428,14 +696,17 @@
     for (var j = 0; j < filtered.length; j++) {
       var r = filtered[j];
       var card = document.createElement("div");
-      card.className = "result-card";
+      card.className = "result-card card-" + r.platform;
 
       var metaParts = [];
       if (r.author) metaParts.push("by " + escapeHtml(r.author));
       if (r.subreddit) metaParts.push(escapeHtml(r.subreddit));
-      if (r.points != null) metaParts.push(r.points + " points");
-      if (r.score != null) metaParts.push(r.score + " upvotes");
+      if (r.language) metaParts.push(escapeHtml(r.language));
+      if (r.points != null) metaParts.push(r.points + " pts");
+      if (r.score != null) metaParts.push(r.score + (r.platform === "github" ? " stars" : " votes"));
       if (r.comments != null) metaParts.push(r.comments + " comments");
+      if (r.tags && r.tags.length) metaParts.push(r.tags.slice(0, 3).join(", "));
+      if (r.wordcount) metaParts.push(r.wordcount + " words");
 
       var metaHtml = "";
       for (var k = 0; k < metaParts.length; k++) {
@@ -444,7 +715,7 @@
 
       var bodyHtml = "";
       if (r.body) {
-        var preview = r.body.length > 300 ? r.body.slice(0, 300) + "..." : r.body;
+        var preview = r.body.length > 200 ? r.body.slice(0, 200) + "..." : r.body;
         bodyHtml = '<div class="body-preview">' + escapeHtml(preview) + "</div>";
       }
 
@@ -468,10 +739,13 @@
   }
 
   function platformLabel(p) {
-    if (p === "hackernews") return "Hacker News";
-    if (p === "youtube") return "YouTube";
-    if (p === "reddit") return "Reddit";
-    return p;
+    var labels = {
+      hackernews: "Hacker News", reddit: "Reddit", youtube: "YouTube",
+      devto: "Dev.to", github: "GitHub", stackoverflow: "StackOverflow",
+      wikipedia: "Wikipedia", lemmy: "Lemmy", googlenews: "Google News",
+      archiveorg: "Archive.org", arxiv: "ArXiv", mastodon: "Mastodon"
+    };
+    return labels[p] || p;
   }
 
   function formatTime(ts) {
