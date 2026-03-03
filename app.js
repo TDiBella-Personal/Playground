@@ -163,12 +163,6 @@
     } else {
       // Toggle this platform
       enabledPlatforms[platform] = !enabledPlatforms[platform];
-      // At least one must stay on
-      var anyOn = false;
-      for (var k = 0; k < ALL_PLATFORMS.length; k++) {
-        if (enabledPlatforms[ALL_PLATFORMS[k]]) { anyOn = true; break; }
-      }
-      if (!anyOn) enabledPlatforms[platform] = true;
     }
 
     syncFilterUI();
@@ -428,8 +422,8 @@
       filtered.push(allResults[i]);
     }
 
-    if (filtered.length === 0 && allResults.length > 0) {
-      resultsEl.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:40px 0;">No results for the enabled platforms.</p>';
+    if (filtered.length === 0) {
+      resultsEl.innerHTML = "";
       return;
     }
 
