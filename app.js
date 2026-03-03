@@ -3,7 +3,8 @@
 
   // ── State ──
   var allResults = [];
-  var activeFilter = "all";
+  var ALL_PLATFORMS = ["hackernews", "youtube", "reddit"];
+  var enabledPlatforms = { hackernews: true, youtube: true, reddit: true };
 
   // ── DOM refs ──
   var app = document.getElementById("app");
@@ -123,13 +124,50 @@
 
   // ── Filters ──
 
+  function syncFilterUI() {
+    var btns = filtersEl.querySelectorAll(".filter");
+    var allOn = true;
+    for (var i = 0; i < ALL_PLATFORMS.length; i++) {
+      if (!enabledPlatforms[ALL_PLATFORMS[i]]) { allOn = false; break; }
+    }
+    for (var j = 0; j < btns.length; j++) {
+      var p = btns[j].getAttribute("data-platform");
+      if (p === "all") {
+        if (allOn) btns[j].classList.add("active");
+        else btns[j].classList.remove("active");
+      } else {
+        if (enabledPlatforms[p]) btns[j].classList.add("active");
+        else btns[j].classList.remove("active");
+      }
+    }
+  }
+
   filtersEl.addEventListener("click", function (e) {
     var btn = e.target.closest(".filter");
     if (!btn) return;
-    var allBtns = filtersEl.querySelectorAll(".filter");
-    for (var i = 0; i < allBtns.length; i++) allBtns[i].classList.remove("active");
-    btn.classList.add("active");
-    activeFilter = btn.getAttribute("data-platform");
+    var platform = btn.getAttribute("data-platform");
+
+    if (platform === "all") {
+      // Check if all are currently on — if so, do nothing; otherwise turn all on
+      var allOn = true;
+      for (var i = 0; i < ALL_PLATFORMS.length; i++) {
+        if (!enabledPlatforms[ALL_PLATFORMS[i]]) { allOn = false; break; }
+      }
+      if (!allOn) {
+        for (var j = 0; j < ALL_PLATFORMS.length; j++) enabledPlatforms[ALL_PLATFORMS[j]] = true;
+      }
+    } else {
+      // Toggle this platform
+      enabledPlatforms[platform] = !enabledPlatforms[platform];
+      // If nothing is enabled, re-enable this one (at least one must be on)
+      var anyOn = false;
+      for (var k = 0; k < ALL_PLATFORMS.length; k++) {
+        if (enabledPlatforms[ALL_PLATFORMS[k]]) { anyOn = true; break; }
+      }
+      if (!anyOn) enabledPlatforms[platform] = true;
+    }
+
+    syncFilterUI();
     renderResults();
   });
 
@@ -337,18 +375,13 @@
 
   function renderResults() {
     resultsEl.innerHTML = "";
-    var filtered;
-    if (activeFilter === "all") {
-      filtered = allResults;
-    } else {
-      filtered = [];
-      for (var i = 0; i < allResults.length; i++) {
-        if (allResults[i].platform === activeFilter) filtered.push(allResults[i]);
-      }
+    var filtered = [];
+    for (var i = 0; i < allResults.length; i++) {
+      if (enabledPlatforms[allResults[i].platform]) filtered.push(allResults[i]);
     }
 
     if (filtered.length === 0 && allResults.length > 0) {
-      resultsEl.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:40px 0;">No results for this platform filter.</p>';
+      resultsEl.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:40px 0;">No results for the enabled platforms.</p>';
       return;
     }
 
