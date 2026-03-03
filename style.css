@@ -250,44 +250,9 @@ h1 {
 
 .search-bar button:hover { background: var(--btn-primary-hover); }
 
-/* ── Quick Links ── */
+/* ── Toolbar ── */
 
-#quick-links {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
-  width: 100%;
-}
-
-.quick-label {
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-}
-
-.quick-link {
-  display: inline-block;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-decoration: none;
-  color: #fff;
-  touch-action: manipulation;
-  transition: opacity 0.15s;
-}
-
-.quick-link:hover,
-.quick-link:active { opacity: 0.8; }
-
-.quick-link.facebook { background: #1877f2; }
-.quick-link.tiktok { background: #222; border: 1px solid #555; }
-.quick-link.instagram { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
-
-/* ── Controls Row ── */
-
-#controls-row {
+#toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -369,6 +334,19 @@ h1 {
 
 .filter:hover { border-color: var(--accent-1); color: var(--text-primary); }
 .filter.active { background: var(--filter-active); border-color: var(--filter-active); color: #fff; }
+
+/* External platform link buttons */
+.filter-link {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.filter-link.facebook { background: #1877f2; border-color: #1877f2; color: #fff; }
+.filter-link.facebook:hover { background: #1565c0; border-color: #1565c0; }
+.filter-link.tiktok { background: #222; border-color: #555; color: #fff; }
+.filter-link.tiktok:hover { background: #333; border-color: #777; }
+.filter-link.instagram { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); border-color: #dc2743; color: #fff; }
+.filter-link.instagram:hover { opacity: 0.85; }
 
 /* ── Status ── */
 

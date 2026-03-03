@@ -10,8 +10,7 @@
   var app = document.getElementById("app");
   var form = document.getElementById("search-form");
   var queryInput = document.getElementById("query");
-  var quickLinks = document.getElementById("quick-links");
-  var controlsRow = document.getElementById("controls-row");
+  var toolbar = document.getElementById("toolbar");
   var filtersEl = document.getElementById("filters");
   var statusEl = document.getElementById("status");
   var resultsEl = document.getElementById("results");
@@ -217,10 +216,9 @@
     // Switch to results layout
     app.classList.remove("centered");
     app.classList.add("has-results");
-    quickLinks.classList.remove("hidden");
-    controlsRow.classList.remove("hidden");
+    toolbar.classList.remove("hidden");
 
-    // Update quick links
+    // Update external platform links
     var enc = encodeURIComponent(query);
     document.getElementById("link-facebook").href =
       "https://www.facebook.com/search/posts/?q=" + enc;
